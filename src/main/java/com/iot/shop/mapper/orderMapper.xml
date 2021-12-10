@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iot.shop.order.web.dao.OrderDAO">
+<select id="orderList" parameterType="ovo" resultType="ovo">
+SELECT A.*                                                          
+    FROM (select @rownum:=@rownum+1 as rn, r.* 
+                   from( SELECT  O.o_NO, O.P_NO, P.P_NAME, 
+                    O.QUANTITY, O.O_regDATE, O.STATE, O.m_ID, 
+                    M.M_NAME, P.PRICE, P.STOCK
+                      FROM ORDERT O
+                        INNER JOIN PRODUCT P 
+                        ON O.P_NO = P.P_NO
+                       INNER JOIN MEMBER M
+                        ON O.m_ID = M.MEM_ID
+		   ORDER BY O.O_NO ) r
+		WHERE (@rownum:=0)=0 ) A
+<choose>
+	<when test="o_no != 0">
+		where o_no = #{o_no}
+	</when>
+	<when test="m_id!=null">
+		where m_id = #{m_id}
+	</when>
+</choose>
+
+</select>
+
+<delete id="orderProcDelete" parameterType="ovo">
+delete from ordert where o_no = #{o_no}
+</delete>
+
+<update id="orderProcUpdate" parameterType="ovo">
+update ordert set
+state = #{state}
+where o_no = #{o_no}
+</update>
+
+<insert id="insertOrders" parameterType="list">
+     INSERT INTO ORDERT (O_NO, P_NO, QUANTITY, PRICE, STATE, M_ID )
+	 VALUES 
+	 <foreach collection="list" item="item" separator="," index="i">
+	   ((SELECT IFNULL(MAX(o_NO) + 1, (0+1)) FROM ORDERt b),
+	     #{item.p_no},
+	     #{item.quantity},
+	     #{item.price},
+	     1,
+	     #{item.m_id})
+	 </foreach>
+</insert>
+
+</mapper>

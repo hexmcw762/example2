@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iot.shop.product.web.dao.ProductDAO">
+
+<select id="productList" parameterType="pvo" resultType="pvo">
+select p_no,p_name,stock,price,pr_date,image,detail,path from product
+<if test="p_no!=0">
+where p_no = #{p_no}
+</if>
+</select>
+
+<insert id="productInsert" parameterType="pvo">
+       <selectKey keyProperty="p_no" resultType="int" order="BEFORE">
+	       SELECT  IFNULL(MAX(p_NO),0)+1  FROM product
+      </selectKey>
+	    INSERT INTO 
+	     product(p_no, p_NAME, PRICE,
+	            DETAIL, STOCK,
+	            IMAGE)
+	    VALUES( #{p_no},
+	            #{p_name   },
+	            #{price  },
+	            #{detail },
+	            #{stock  },
+	            #{image   }
+	           ) 
+</insert>
+
+<update id="updateProduct" parameterType="pvo">
+update product set p_NAME = #{p_name}, PRICE = #{price}, DETAIL = #{detail}, STOCK = #{stock},
+<if test="image!=null">
+IMAGE =  #{image}
+</if>
+where p_no = #{p_no}
+</update>
+
+<delete id="productDelete" parameterType="pvo">
+delete from product where p_no = #{p_no}
+</delete>
+
+<update id="updateStock" parameterType="list">
+<foreach collection="list" item="item" separator=";"  index="i">
+        UPDATE PRODUCT SET STOCK = STOCK-#{item.quantity} 
+        WHERE P_NO=#{item.p_no}
+    </foreach>
+
+</update>
+</mapper>
